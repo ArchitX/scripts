@@ -43,7 +43,7 @@ while [ x"$answer" != "xy" ] && [ x"$answer" != "xY" ] ; do
                 while [ $validhost != 1 ] ; do
                         clear
                         printf "enter full qualified domain name: "; read host_name
-                        if [[ $host_name =~ ^[0-9a-z.]+$ ]]; then
+                        if [[ $host_name =~ ^[0-9a-z.-]+$ ]]; then
                                 validhost=1
                         else
                                 printf "invalid hostname: $host_name\n"
@@ -138,11 +138,12 @@ sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$host_name"'#' /etc/sysconfig/network
         printf "USERCTL=no\n" >> $NetworkFile
         printf "$ip $host_name\n" >> /etc/hosts
 elif [[ $bootproto == D ]]; then
+		dhcp_hostname=`printf host_name | awk -F . '{ print $1 }'`
         printf "DEVICE=$device\n" > $NetworkFile
         printf "BOOTPROTO=dhcp\n" >> $NetworkFile
         printf "HWADDR=$hwaddr\n" >> $NetworkFile
         printf "USERCTL=no\n" >> $NetworkFile
-        printf "DHCP_HOSTNAME=$host_name\n" >> $NetworkFile
+        printf "DHCP_HOSTNAME=$dhcp_host_name\n" >> $NetworkFile
         printf "\tYou have chosen a DHCP setup with a hostname: $host_name\n"
         printf "\tIs this correct? [y/n] "; read answer
 else
