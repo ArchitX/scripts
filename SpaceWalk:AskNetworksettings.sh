@@ -1,3 +1,4 @@
+#raw
 host_name=""
 ip=""
 netmask=""
@@ -138,12 +139,12 @@ sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$host_name"'#' /etc/sysconfig/network
         printf "USERCTL=no\n" >> $NetworkFile
         printf "$ip $host_name\n" >> /etc/hosts
 elif [[ $bootproto == D ]]; then
-		dhcp_hostname=`printf host_name | awk -F . '{ print $1 }'`
+		dhcp_hostname=`printf $host_name | awk -F . '{ print $1 }'`
         printf "DEVICE=$device\n" > $NetworkFile
         printf "BOOTPROTO=dhcp\n" >> $NetworkFile
         printf "HWADDR=$hwaddr\n" >> $NetworkFile
         printf "USERCTL=no\n" >> $NetworkFile
-        printf "DHCP_HOSTNAME=$dhcp_host_name\n" >> $NetworkFile
+        printf "DHCP_HOSTNAME=$dhcp_hostname\n" >> $NetworkFile
         printf "\tYou have chosen a DHCP setup with a hostname: $host_name\n"
         printf "\tIs this correct? [y/n] "; read answer
 else
@@ -153,5 +154,6 @@ else
 fi
 done
 hostname $host_name
+#end
 
 		
