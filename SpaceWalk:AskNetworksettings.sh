@@ -16,6 +16,7 @@ dns2=""
 NetworkFile="/tmp/network.ks"
 DnsFile="/tmp/dns.ks"
 GwFile="/tmp/gateway.ks"
+HostFile="/tmp/HostFile.ks"
 
 
 
@@ -143,6 +144,7 @@ sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$host_name"'#' /etc/sysconfig/network
         printf "NETMASK=$netmask\n" >> $NetworkFile
         printf "USERCTL=no\n" >> $NetworkFile
         printf "$ip $host_name\n" >> /etc/hosts
+        printf "$ip $host_name\n" >> $HostFile
 elif [[ $bootproto == D ]]; then
 		dhcp_hostname=`printf $host_name | awk -F . '{ print $1 }'`
         printf "DEVICE=$device\n" > $NetworkFile
@@ -150,6 +152,7 @@ elif [[ $bootproto == D ]]; then
         printf "HWADDR=$hwaddr\n" >> $NetworkFile
         printf "USERCTL=no\n" >> $NetworkFile
         printf "DHCP_HOSTNAME=$dhcp_hostname\n" >> $NetworkFile
+        printf "$ip $host_name\n" >> $HostFile
         printf "\tYou have chosen a DHCP setup with a hostname: $host_name\n"
         printf "\tIs this correct? [y/n] "; read answer
 else
