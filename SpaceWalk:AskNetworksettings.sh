@@ -22,13 +22,19 @@ GwFile="/tmp/gateway.ks"
 ipvalid=unchecked
 check_ip()
         {
+# Capturing the length of the string
         size=${#1}
+# Capturing the numbers of the string divided by .        
         digit1=`printf "$1" | cut -d "." -f1`
         digit2=`printf "$1" | cut -d "." -f2`
         digit3=`printf "$1" | cut -d "." -f3`
         digit4=`printf "$1" | cut -d "." -f4`
         digit5=`printf "$1" | cut -d "." -f5`
-		digitnr=`awk -F. '{print NF-1}' <<<"$1"`
+# capturing number of dot        
+	digitnr=`awk -F. '{print NF-1}' <<<"$1"`
+# If string is not longer than 15 chars wich consist of numbers and three dots, 
+#and every number is below 255 and the is a max of 4 groups of numbers than it can be a valid ip under
+#some circumstance
 		if [[ $1 =~ ^[0-9.]+$ ]] && [ $size -le 15 ] && [ $digitnr -eq 3 ] && [ "$digitnr" -eq "$digitnr" ] 2>/dev/null && [ $digit1 -le 255 ] && [ "$digit1" -eq "$digit1" ] 2>/dev/null && [ $digit2 -le 255 ] && [ "$digit2" -eq "$digit2" ] 2>/dev/null && [ $digit3 -le 255 ] && [ "$digit3" -eq "$digit3" ] 2>/dev/null && [ $digit4 -le 255 ] && [ "$digit4" -eq "$digit4" ] 2>/dev/null && [ -z $digit5 ]; then
                         ipvalid=0
         else
@@ -101,7 +107,6 @@ while [ $gwok != 1 ]; do
         fi
 done
 
-#doe een check of de gw in hetzelfde subnet zit als ip ingevoerd in combinatie met het ipnummer
         clear
         printf "hostname: $host_name\n"
         printf "ipaddress: $ip\n"
