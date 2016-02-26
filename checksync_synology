@@ -1,0 +1,292 @@
+# This scripts is far from optimale, it expresses my scripts skillset 3 years ago.
+# This script is called with @reboot cron command in a screen session
+# The goals of this scripts was to run on a synology DS214 witch debian chroot installed
+# It scans the the client, if it is there it will check for differences on the client vs the files on the DS214.
+# it worked without errors, hope you can get inspirations from it.
+
+
+
+kijklocatie1="/mnt/Clients/Downloads/"
+kijklocatie2="/mnt/Clients/Documents/"
+kijklocatie3="/mnt/Clients/Favorites/"
+kijklocatie4="/mnt/Clients/Music/"
+kijklocatie5="/mnt/Clients/Pictures/"
+kijklocatie6="/mnt/Clients/Desktop/"
+synclocatie1="/mnt/BackupPc/Downloads"
+synclocatie2="/mnt/BackupPc/Documents"
+synclocatie3="/mnt/BackupPc/Favorites"
+synclocatie4="/mnt/BackupPc/Music"
+synclocatie5="/mnt/BackupPc/Pictures"
+synclocatie6="/mnt/BackupPc/Desktop"
+timeo="--timeout=30"
+modw="--modify-window=1"
+client="192.168.100.200"
+
+
+
+while true; do
+
+        foutcounter1=0
+        ping -c1 $client > /dev/null && perror1=0 || perror1=1
+        mountpoint -q $kijklocatie1 > /dev/null && merror1=0 || merror1=1
+        while [[ $perror1 -eq 1 || $merror1 -eq 1 ]] ; do
+                echo "Er wordt niet voldaan aan de voorwaarden voor een goede checksync $kijklocatie1(0 is ok) ping:$perror1 mount=$merror1"
+                foutcounter1=$((foutcounter1+1))
+                sleep 30
+                if [ $foutcounter1 -gt 11520  ] ; then
+                        foutcounter1=0
+			echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror1 mountcheck=$merror1" | mail -s "Sync programma S.Schijf" sander@linuxgebruiker.nl p.ramselaar@gmail.com s.ramselaar@gmail.com
+                        foutcounter1=0
+                else
+                        echo threshold not reached 
+                fi
+                ping -c1 $client > /dev/null && perror1=0 || perror1=1
+                mountpoint -q $kijklocatie1 > /dev/null && merror1=0 || merror1=1
+		if [ $perror1 -eq 0 ] ; then
+			umount /mnt/Clients/*
+			mount -a
+		else
+			echo $client is niet aanwezig op het netwerk
+		fi
+	done
+
+		du $kijklocatie1 | cut -f 2  | sort |  sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Org_Downloadsmappenstats.sh
+		sh Org_Downloadsmappenstats.sh > /root/statskijklocatie1
+		
+		du $synclocatie1 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/' | > Sync_Downloadsmappenstats.sh
+		sh Sync_Downloadsmappenstats.sh > /root/statssynclocatie1
+		
+		if diff /root/statskijklocatie1  /root/statssynclocatie1 >/dev/null ; then
+			echo Downloads zijn gelijk
+		else 
+			echo $(date)
+			echo $kijklocatie1 en $synclocatie1 zijn ongelijk
+		        rsync -avr $timeo $modw --delete $kijklocatie1 $synclocatie1 
+		fi 
+		
+	sleep 30
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+        foutcounter2=0
+        ping -c1 $client > /dev/null && perror2=0 || perror2=1
+        mountpoint -q $kijklocatie2 > /dev/null && merror2=0 || merror2=1
+        while [[ $perror2 -eq 1 || $merror2 -eq 1 ]] ; do
+                echo "Er wordt niet voldaan aan de voorwaarden voor een goede checksync $kijklocatie2(0 is ok) ping:$perror2 mount=$merror2"
+		foutcounter2=$((foutcounter2+1))
+		sleep 30
+                if [ $foutcounter2 -gt 11520  ] ; then
+			echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror2 mountcheck=$merror2" | mail -s "Sync programma S.Schijf" <enter your email here> 
+                        foutcounter2=0
+                else
+                        echo threshold not reached
+                fi
+                ping -c1 $client > /dev/null && perror2=0 || perror2=1
+                mountpoint -q $kijklocatie2 > /dev/null && merror2=0 || merror2=1
+	        if [ $perror2 -eq 0 ] ; then
+			umount /mnt/Clients/*
+                        mount -a
+                else
+                        echo $client is niet aanwezig op het netwerk
+                fi
+ 
+        done
+		du $kijklocatie2 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/' > Org_Documentsmappenstats.sh
+                sh Org_Documentsmappenstats.sh > /root/statskijklocatie2
+
+                du $synclocatie2 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Sync_Documentsmappenstats.sh
+                sh Sync_Documentsmappenstats.sh > /root/statssynclocatie2		
+
+		if diff /root/statskijklocatie2  /root/statssynclocatie2 >/dev/null ; then
+        		echo Documents zijn gelijk
+		else
+        		echo $(date)
+	        	echo $kijklocatie2 en $synclocatie2 zijn ongelijk
+		        rsync -avr $timeo $modw --delete $kijklocatie2 $synclocatie2
+		fi
+
+
+
+	sleep 30
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+  foutcounter3=0
+        ping -c1 $client > /dev/null && perror3=0 || perror3=1
+        mountpoint -q $kijklocatie3 > /dev/null && merror3=0 || merror3=1
+        while [[ $perror3 -eq 1 || $merror3 -eq 1 ]] ; do
+                echo "Er wordt niet voldaan aan de voorwaarden voor een goede checksync $kijklocatie3 (0 is ok) ping:$perror3 mount=$merror3"
+                foutcounter3=$((foutcounter3+1))
+                sleep 30
+                if [ $foutcounter3 -gt 11520  ] ; then
+             		echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror3 mountcheck=$merror3" | mail -s "Sync programma S.Schijf" <your email adres here> 
+		        foutcounter3=0
+                else
+                        echo threshold not reached
+                fi
+                ping -c1 $client  > /dev/null && perror3=0 || perror3=1
+                mountpoint -q $kijklocatie3 > /dev/null && merror3=0 || merror3=1
+                if [ $perror3 -eq 0 ] ; then
+			umount /mnt/Clients/*
+                        mount -a
+                else
+                        echo $client is niet aanwezig op het netwerk
+                fi
+
+        done
+                du $kijklocatie3 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/' | > Org_Favoritesmappenstats.sh
+                sh Org_Favoritesmappenstats.sh > /root/statskijklocatie3
+
+                du $synclocatie3 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Sync_Favoritesmappenstats.sh
+                sh Sync_Favoritesmappenstats.sh > /root/statssynclocatie3
+
+		if diff /root/statskijklocatie3  /root/statssynclocatie3 >/dev/null ; then
+        		echo Favorites zijn gelijk
+		else
+        		echo $(date)
+	        	echo $kijklocatie3 en $synclocatie3 zijn ongelijk
+	        	rsync -avr $timeo $modw --delete $kijklocatie3 $synclocatie3
+		fi
+
+
+	sleep 30
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+  foutcounter4=0
+        ping -c1 $client > /dev/null && perror4=0 || perror4=1
+        mountpoint -q $kijklocatie4 > /dev/null && merror4=0 || merror4=1
+        while [[ $perror4 -eq 1 || $merror4 -eq 1 ]] ; do
+                echo "Er wordt niet voldaan aan de voorwaarden voor een goede checksync $kijklocatie4 (0 is ok) ping:$perror4 mount=$merror4"
+                foutcounter4=$((foutcounter4+1))
+                sleep 30
+                if [ $foutcounter4 -gt 11520  ] ; then
+                        foutcounter4=0
+             		echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror4 mountcheck=$merror4" | mail -s "Sync programma S.Schijf" <your email adres here > 
+                else
+                        echo threshold not reached
+                fi
+                ping -c1 $client  > /dev/null && perror4=0 || perror4=1
+                mountpoint -q $kijklocatie4 > /dev/null && merror4=0 || merror4=1
+                if [ $perror4 -eq 0 ] ; then
+			umount /mnt/Clients/*
+                        mount -a
+                else
+                        echo $client is niet aanwezig op het netwerk
+                fi
+
+        done
+                du $kijklocatie4 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Org_Musicmappenstats.sh
+                sh Org_Musicmappenstats.sh > /root/statskijklocatie4
+
+                du $synclocatie4 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Sync_Musicmappenstats.sh
+                sh Sync_Musicmappenstats.sh > /root/statssynclocatie4
+
+		if diff /root/statskijklocatie4  /root/statssynclocatie4 >/dev/null ; then
+        		echo Music zijn gelijk
+		else
+        		echo $(date)
+	        	echo $kijklocatie4 en $synclocatie4 zijn ongelijk
+	        	rsync -avr $timeo $modw --delete $kijklocatie4 $synclocatie4
+
+		fi
+
+
+	sleep 30
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+  foutcounter5=0
+        ping -c1 $client > /dev/null && perror5=0 || perror5=1
+        mountpoint -q $kijklocatie5 > /dev/null  && merror5=0 || merror5=1
+        while [[ $perror5 -eq 1 || $merror5 -eq 1 ]] ; do
+                echo "Er wordt niet voldaan aan de voorwaarden voor een goede checksync $kijklocatie5 (0 is ok) ping:$perror5 mount=$merror5"
+                foutcounter5=$((foutcounter5+1))
+                sleep 30
+                if [ $foutcounter5 -gt 11520 ] ; then
+                	echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror5 mountcheck=$merror5" | mail -s "Sync programma S.Schijf" <your email adres here > 
+                        foutcounter5=0
+                else
+                        echo threshold not reached
+                fi
+                ping -c1 $client  > /dev/null && perror5=0 || perror5=1
+                mountpoint -q $kijklocatie5 > /dev/null && merror5=0 || merror5=1
+                if [ $perror5 -eq 0 ] ; then
+                        umount /mnt/Clients/*
+			mount -a
+                else
+                        echo $client is niet aanwezig op het netwerk
+                fi
+
+        done
+
+                du $kijklocatie5 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Org_Picturesmappenstats.sh
+                sh Org_Picturesmappenstats.sh > /root/statskijklocatie5
+
+                du $synclocatie5 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Sync_Picturesmappenstats.sh
+                sh Sync_Picturesmappenstats.sh > /root/statssynclocatie5
+
+		if diff /root/statskijklocatie5  /root/statssynclocatie5 >/dev/null ; then
+	        	echo Picures zijn gelijk
+		else
+        		echo $(date)
+	        	echo $kijklocatie5 en $synclocatie5 zijn ongelijk
+	        	rsync -avr $timeo $modw --delete $kijklocatie5 $synclocatie5
+		fi
+
+	
+	sleep 30
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+  foutcounter6=0
+        ping -c1 $client > /dev/null && perror6=0 || perror6=1
+        mountpoint -q $kijklocatie6 > /dev/null && merror6=0 || merror6=1
+        while [[ $perror6 -eq 1 || $merror6 -eq 1 ]] ; do
+                echo "Er wordt niet voldaan aan de voorwaarden voor een goede checksync $kijklocatie6 (0 is ok) ping:$perror6 mount=$merror6"
+                foutcounter6=$((foutcounter6+1))
+                sleep 30
+                if [ $foutcounter6 -gt 11520  ] ; then
+                	echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror6 mountcheck=$merror6" | mail -s "Sync programma S.Schijf" <your email adres here > 
+                        foutcounter6=0
+                else
+                        echo threshold not reached
+                fi
+                ping -c1 $client > /dev/null  && perror6=0 || perror6=1
+                mountpoint -q $kijklocatie6 > /dev/null  && merror6=0 || merror6=1
+                if [ $perror6 -eq 0 ] ; then
+                        umount /mnt/Clients/*
+			mount -a
+                else
+                        echo $client is niet aanwezig op het netwerk
+                fi
+
+        done
+
+                du $kijklocatie6 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/'  > Org_Desktopmappenstats.sh
+                sh Org_Desktopmappenstats.sh > /root/statskijklocatie6
+
+                du $synclocatie6 | cut -f 2  | sort | sed 's/$/\/"/g' |  sed -e 's/^/stat -c %Y "/' > Sync_Desktopmappenstats.sh
+                sh Sync_Desktopmappenstats.sh > /root/statssynclocatie6
+
+                if diff /root/statskijklocatie6  /root/statssynclocatie6 >/dev/null ; then
+                        echo Desktop zijn gelijk
+                else
+                        echo $(date)
+                        echo $kijklocatie6 en $synclocatie6 zijn ongelijk
+                        rsync -avr $timeo $modw --delete $kijklocatie6 $synclocatie6
+                fi
+
+
+        sleep 30
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+
+done
+
