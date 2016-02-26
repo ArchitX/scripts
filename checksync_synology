@@ -35,7 +35,7 @@ while true; do
                 sleep 30
                 if [ $foutcounter1 -gt 11520  ] ; then
                         foutcounter1=0
-			echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror1 mountcheck=$merror1" | mail -s "Sync programma S.Schijf" sander@linuxgebruiker.nl p.ramselaar@gmail.com s.ramselaar@gmail.com
+			echo "Er is vier dagen geen contact geweest met het sync programma en de pc, mogelijk is er iets mis(0 is ok ) ping:$perror1 mountcheck=$merror1" | mail -s "Sync programma S.Schijf" <your email adres here >
                         foutcounter1=0
                 else
                         echo threshold not reached 
